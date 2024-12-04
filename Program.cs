@@ -13,7 +13,7 @@ abstract class AbstractHalf
         this.b = b;
     }
 
-    // Абстрактний метод для виведення коефіцієнтів
+ 
     public abstract void DisplayCoefficients();
 
     // Абстрактний метод для перевірки, чи належить точка

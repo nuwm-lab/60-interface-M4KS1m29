@@ -50,6 +50,7 @@ class HalfPlane : AbstractHalf
     }
 }
 
+
 class HalfSpace : AbstractHalf
 {
     private double a3;

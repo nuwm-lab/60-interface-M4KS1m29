@@ -73,7 +73,7 @@ class HalfSpace : AbstractHalf
 
     public override bool IsPointIn(double x1, double x2)
     {
-        throw new NotImplementedException("IsPointIn method is not applicable for HalfSpace. Use IsPointInHalfSpace instead.");
+        throw new NotImplementedException("IsPointIn methd is not applicable for HalfSpace. Use IsPointInHalfSpace instead.");
     }
 
     // Деструктор

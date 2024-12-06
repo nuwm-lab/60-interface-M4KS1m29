@@ -16,7 +16,7 @@ abstract class AbstractHalf
     public abstract void DisplayCoefficients();
 
     // Абстрактний метод для перевірки, чи належить точка
-    public abstract bool IsPointIn(double x1, double x2, double? x3 = null);
+    public abstract bool IsPointInside(double x1, double x2, double? x3 = null);
 }
 
 class HalfPlane : AbstractHalf
@@ -31,7 +31,7 @@ class HalfPlane : AbstractHalf
         Console.WriteLine($"Рiвняння пiвплощини: {CoefficientX1} * x1 + {CoefficientX2} * x2 <= {ConstantTerm}");
     }
 
-    public override bool IsPointIn(double x1, double x2, double? x3 = null)
+    public override bool IsPointInside(double x1, double x2, double? x3 = null)
     {
         return (CoefficientX1 * x1 + CoefficientX2 * x2) <= ConstantTerm;
     }
@@ -52,11 +52,12 @@ class HalfSpace : AbstractHalf
         Console.WriteLine($"Рiвняння пiвпростору: {CoefficientX1} * x1 + {CoefficientX2} * x2 + {CoefficientX3} * x3 <= {ConstantTerm}");
     }
 
-    public override bool IsPointIn(double x1, double x2, double? x3 = null)
+    public override bool IsPointInside(double x1, double x2, double? x3 = null)
     {
-        if (x3 == null)
+        if (!x3.HasValue)
         {
-            throw new ArgumentException("Для перевірки точки в півпросторі потрібен третій параметр (x3).");
+            Console.WriteLine("Помилка: для перевірки точки в півпросторі потрібен третій параметр (x3).\n");
+            return false;
         }
         return (CoefficientX1 * x1 + CoefficientX2 * x2 + CoefficientX3 * x3.Value) <= ConstantTerm;
     }
@@ -75,21 +76,18 @@ class Program
                 return;
             }
 
-            AbstractHalf obj;
-
             Console.WriteLine("Введіть коефіцієнти:");
-            Console.Write("a1: ");
-            double a1 = double.Parse(Console.ReadLine());
-            Console.Write("a2: ");
-            double a2 = double.Parse(Console.ReadLine());
+
+            double a1 = ReadDouble("a1: ");
+            double a2 = ReadDouble("a2: ");
             double a3 = 0;
             if (userChoice == 2)
             {
-                Console.Write("a3: ");
-                a3 = double.Parse(Console.ReadLine());
+                a3 = ReadDouble("a3: ");
             }
-            Console.Write("c: ");
-            double c = double.Parse(Console.ReadLine());
+            double c = ReadDouble("c: ");
+
+            AbstractHalf obj;
 
             if (userChoice == 1)
             {
@@ -105,34 +103,35 @@ class Program
             obj.DisplayCoefficients();
 
             Console.WriteLine("Введіть координати точки для перевірки:");
-            Console.Write("x1: ");
-            double x1 = double.Parse(Console.ReadLine());
-            Console.Write("x2: ");
-            double x2 = double.Parse(Console.ReadLine());
+            double x1 = ReadDouble("x1: ");
+            double x2 = ReadDouble("x2: ");
             double? x3 = null;
             if (userChoice == 2)
             {
-                Console.Write("x3: ");
-                x3 = double.Parse(Console.ReadLine());
+                x3 = ReadDouble("x3: ");
             }
 
-            bool isIn = obj.IsPointIn(x1, x2, x3);
+            bool isIn = obj.IsPointInside(x1, x2, x3);
             Console.WriteLine($"Точка належить області: {isIn}");
-        }
-        catch (FormatException)
-        {
-            Console.WriteLine("Помилка введення: введіть коректні числові значення.");
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine($"Помилка: {ex.Message}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Невідома помилка: {ex.Message}");
+            Console.WriteLine($"Сталася помилка: {ex.Message}");
         }
 
         Console.WriteLine("Натисніть будь-яку клавішу для виходу.");
         Console.ReadKey();
+    }
+
+    static double ReadDouble(string prompt)
+    {
+        double result;
+        while (true)
+        {
+            Console.Write(prompt);
+            if (double.TryParse(Console.ReadLine(), out result))
+                return result;
+            Console.WriteLine("Будь ласка, введіть коректне числове значення.");
+        }
     }
 }

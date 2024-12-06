@@ -1,85 +1,65 @@
 ﻿using System;
-using System.Threading;
 
 abstract class AbstractHalf
 {
-    protected double a1, a2, b;
+    protected double CoefficientX1, CoefficientX2, ConstantTerm;
 
     // Конструктор
-    protected AbstractHalf(double a1, double a2, double b)
+    protected AbstractHalf(double coefficientX1, double coefficientX2, double constantTerm)
     {
-        this.a1 = a1;
-        this.a2 = a2;
-        this.b = b;
+        CoefficientX1 = coefficientX1;
+        CoefficientX2 = coefficientX2;
+        ConstantTerm = constantTerm;
     }
 
  
     public abstract void DisplayCoefficients();
 
     // Абстрактний метод для перевірки, чи належить точка
-    public abstract bool IsPointIn(double x1, double x2);
-
-    // Деструктор
-    ~AbstractHalf()
-    {
-        Console.WriteLine("AbstractHalf знищується");
-    }
+    public abstract bool IsPointInside(double x1, double x2, double? x3 = null);
 }
 
 class HalfPlane : AbstractHalf
 {
-    public HalfPlane(double a1, double a2, double b) : base(a1, a2, b)
+    public HalfPlane(double coefficientX1, double coefficientX2, double constantTerm) : base(coefficientX1, coefficientX2, constantTerm)
     {
         Console.WriteLine("HalfPlane створено");
     }
 
     public override void DisplayCoefficients()
     {
-        Console.WriteLine($"Рiвняння пiвплощини: {a1} * x1 + {a2} * x2 <= {b}");
+        Console.WriteLine($"Рiвняння пiвплощини: {CoefficientX1} * x1 + {CoefficientX2} * x2 <= {ConstantTerm}");
     }
 
-    public override bool IsPointIn(double x1, double x2)
+    public override bool IsPointInside(double x1, double x2, double? x3 = null)
     {
-        return (a1 * x1 + a2 * x2) <= b;
-    }
-
-    // Деструктор
-    ~HalfPlane()
-    {
-        Console.WriteLine("HalfPlane знищується");
+        return (CoefficientX1 * x1 + CoefficientX2 * x2) <= ConstantTerm;
     }
 }
 
-
 class HalfSpace : AbstractHalf
 {
-    private double a3;
+    private double CoefficientX3;
 
-    public HalfSpace(double a1, double a2, double a3, double b) : base(a1, a2, b)
+    public HalfSpace(double coefficientX1, double coefficientX2, double coefficientX3, double constantTerm) : base(coefficientX1, coefficientX2, constantTerm)
     {
-        this.a3 = a3;
+        CoefficientX3 = coefficientX3;
         Console.WriteLine("HalfSpace створено");
     }
 
     public override void DisplayCoefficients()
     {
-        Console.WriteLine($"Рiвняння пiвпростору: {a1} * x1 + {a2} * x2 + {a3} * x3 <= {b}");
+        Console.WriteLine($"Рiвняння пiвпростору: {CoefficientX1} * x1 + {CoefficientX2} * x2 + {CoefficientX3} * x3 <= {ConstantTerm}");
     }
 
-    public bool IsPointInHalfSpace(double x1, double x2, double x3)
+    public override bool IsPointInside(double x1, double x2, double? x3 = null)
     {
-        return (a1 * x1 + a2 * x2 + a3 * x3) <= b;
-    }
-
-    public override bool IsPointIn(double x1, double x2)
-    {
-        throw new NotImplementedException("IsPointIn methd is not applicable for HalfSpace. Use IsPointInHalfSpace instead.");
-    }
-
-    // Деструктор
-    ~HalfSpace()
-    {
-        Console.WriteLine("HalfSpace знищується");
+        if (!x3.HasValue)
+        {
+            Console.WriteLine("Помилка: для перевірки точки в півпросторі потрібен третій параметр (x3).\n");
+            return false;
+        }
+        return (CoefficientX1 * x1 + CoefficientX2 * x2 + CoefficientX3 * x3.Value) <= ConstantTerm;
     }
 }
 
@@ -87,42 +67,71 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Оберіть тип об'єкта: 1 - HalfPlane, 2 - HalfSpace");
-        string userChoose = Console.ReadLine();
-
-        AbstractHalf obj;
-
-        if (userChoose == "1")
+        try
         {
-            obj = new HalfPlane(1, 2, 5);
-            Console.WriteLine("Ви вибрали HalfPlane.");
+            Console.WriteLine("Оберіть тип об'єкта: 1 - HalfPlane, 2 - HalfSpace");
+            if (!int.TryParse(Console.ReadLine(), out int userChoice) || (userChoice != 1 && userChoice != 2))
+            {
+                Console.WriteLine("Невірний вибір. Завершення програми.");
+                return;
+            }
+
+            Console.WriteLine("Введіть коефіцієнти:");
+
+            double a1 = ReadDouble("a1: ");
+            double a2 = ReadDouble("a2: ");
+            double a3 = 0;
+            if (userChoice == 2)
+            {
+                a3 = ReadDouble("a3: ");
+            }
+            double c = ReadDouble("c: ");
+
+            AbstractHalf obj;
+
+            if (userChoice == 1)
+            {
+                obj = new HalfPlane(a1, a2, c);
+                Console.WriteLine("Ви вибрали HalfPlane.");
+            }
+            else
+            {
+                obj = new HalfSpace(a1, a2, a3, c);
+                Console.WriteLine("Ви вибрали HalfSpace.");
+            }
+
+            obj.DisplayCoefficients();
+
+            Console.WriteLine("Введіть координати точки для перевірки:");
+            double x1 = ReadDouble("x1: ");
+            double x2 = ReadDouble("x2: ");
+            double? x3 = null;
+            if (userChoice == 2)
+            {
+                x3 = ReadDouble("x3: ");
+            }
+
+            bool isIn = obj.IsPointInside(x1, x2, x3);
+            Console.WriteLine($"Точка належить області: {isIn}");
         }
-        else
+        catch (Exception ex)
         {
-            obj = new HalfSpace(1, 2, 3, 10);
-            Console.WriteLine("Ви вибрали HalfSpace.");
+            Console.WriteLine($"Сталася помилка: {ex.Message}");
         }
 
-        obj.DisplayCoefficients();
-
-        if (userChoose == "1")
-        {
-            Console.WriteLine("Точка (1, 1) належить пiвплощинi: " + obj.IsPointIn(1, 1));
-        }
-        else
-        {
-            HalfSpace halfSpaceObj = obj as HalfSpace;
-            Console.WriteLine("Точка (1, 1, 1) належить пiпростору: " + halfSpaceObj.IsPointInHalfSpace(1, 1, 1));
-        }
-
-        obj = null;
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-
-
-
-        Thread.Sleep(1000);
-
+        Console.WriteLine("Натисніть будь-яку клавішу для виходу.");
         Console.ReadKey();
+    }
+
+    static double ReadDouble(string prompt)
+    {
+        double result;
+        while (true)
+        {
+            Console.Write(prompt);
+            if (double.TryParse(Console.ReadLine(), out result))
+                return result;
+            Console.WriteLine("Будь ласка, введіть коректне числове значення.");
+        }
     }
 }
